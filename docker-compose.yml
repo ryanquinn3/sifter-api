@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+  api:
+    build: .
+    command: npm run server:dev
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/code
+      - api-deps:/code/node_modules
+    environment:
+      - VIRTUAL_HOST=api.sifter.dev
+
+  web:
+    image: 'ryanquinn3/sifter-client:latest'
+    environment:
+      - VIRTUAL_HOST=sifter.dev
+
+  proxy:
+    image: 'dockercloud/haproxy:latest'
+    links:
+      - api
+      - web
+    ports:
+      - '80:80'
+      - '443:443'
+      - '1936:1936'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+
+volumes:
+  api-deps:
